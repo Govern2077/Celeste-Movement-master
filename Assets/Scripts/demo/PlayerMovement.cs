@@ -50,7 +50,7 @@ public class PlayerMovement : MonoBehaviour
             SubscribeToWhiteEvent();
         }
     }
-
+    #region Update
     // Update is called once per frame
     void Update()
     {
@@ -134,22 +134,22 @@ public class PlayerMovement : MonoBehaviour
         // Listen for the S key to toggle the mode
         if (Input.GetKeyDown(KeyCode.S))
         {
+            EventCenter.Instance.TriggerEvent("ChangeStatus");
             isBlackMode = !isBlackMode;
-
-            // Toggle event subscription based on the current mode
-            if (isBlackMode)
+            if(isBlackMode)
             {
-                EventCenter.Instance.Subscribe("black event", SubscribeToBlackEvent);
-                EventCenter.Instance.Unsubscribe("white event", SubscribeToWhiteEvent);
+
+                SubscribeToBlackEvent();
             }
             else
             {
-                EventCenter.Instance.Subscribe("white event", SubscribeToWhiteEvent);
-                EventCenter.Instance.Unsubscribe("black event", SubscribeToBlackEvent);
+
+                SubscribeToWhiteEvent();
+       
             }
         }
     }
-
+    #endregion
     void GroundTouch()
     {
         hasDashed = false;
@@ -213,7 +213,7 @@ public class PlayerMovement : MonoBehaviour
     // Subscribe to White event (moves player down and changes gravity)
     private void SubscribeToWhiteEvent()
     {
-        rb.transform.position -= new Vector3(0, 1, 0);  // Move down 1 unit
+        rb.transform.position -= new Vector3(0, 2, 0);  // Move down 1 unit
         jumpForce = -15;  // Set jump force to negative
         rb.gravityScale = -3;  // Set gravity scale to negative
     }

@@ -16,6 +16,8 @@ public class Collision : MonoBehaviour
     public bool onLeftWall;
     public int wallSide;
 
+    private bool isBlack = true;
+
     [Space]
 
     [Header("Collision")]
@@ -27,7 +29,20 @@ public class Collision : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        EventCenter.Instance.Subscribe("ChangeStatus", ChangeGround);
+    }
+
+    void ChangeGround()
+    {
+        bottomOffset = new Vector2(bottomOffset.x, -bottomOffset.y);
+        if(isBlack)
+        {
+            isBlack = false;
+        }
+        else
+        {
+            isBlack = false;
+        }
     }
 
     // Update is called once per frame
