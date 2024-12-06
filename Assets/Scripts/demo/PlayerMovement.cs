@@ -11,11 +11,11 @@ public class PlayerMovement : MonoBehaviour
 
     [Space]
     [Header("Stats")]
-    public float speed = 10;
-    public float jumpForce = 50;
-    public float slideSpeed = 5;
-    public float wallJumpLerp = 10;
-    public float dashSpeed = 20;
+    private float speed = 10;
+    private float jumpForce = 15;
+    private float slideSpeed = 5;
+    private float wallJumpLerp = 10;
+    private float dashSpeed = 20;
 
     [Space]
     [Header("Booleans")]
@@ -31,11 +31,24 @@ public class PlayerMovement : MonoBehaviour
 
     public int side = 1;
 
+    // New boolean to switch between modes
+    private bool isBlackMode = true;
+
     // Start is called before the first frame update
     void Start()
     {
         coll = GetComponent<Collision>();
         rb = GetComponent<Rigidbody2D>();
+
+        // Subscribe to the initial event based on the default state of isBlackMode
+        if (isBlackMode)
+        {
+            SubscribeToBlackEvent();
+        }
+        else
+        {
+            SubscribeToWhiteEvent();
+        }
     }
 
     // Update is called once per frame
@@ -67,24 +80,7 @@ public class PlayerMovement : MonoBehaviour
         {
             wallJumped = false;
         }
-
-        // Wall Grab Logic
-        if (wallGrab && !isDashing)
-        {
-            rb.gravityScale = 0;
-            if (x > .2f || x < -.2f)
-                rb.velocity = new Vector2(rb.velocity.x, 0);
-
-            float speedModifier = y > 0 ? .5f : 1;
-
-            rb.velocity = new Vector2(rb.velocity.x, y * (speed * speedModifier));
-        }
-        else
-        {
-            rb.gravityScale = 3;
-        }
-
-        // Wall Slide Logic
+// Wall Slide Logic
         if (coll.onWall && !coll.onGround)
         {
             if (x != 0 && !wallGrab)
@@ -134,6 +130,24 @@ public class PlayerMovement : MonoBehaviour
         {
             side = -1;
         }
+
+        // Listen for the S key to toggle the mode
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            isBlackMode = !isBlackMode;
+
+            // Toggle event subscription based on the current mode
+            if (isBlackMode)
+            {
+                EventCenter.Instance.Subscribe("black event", SubscribeToBlackEvent);
+                EventCenter.Instance.Unsubscribe("white event", SubscribeToWhiteEvent);
+            }
+            else
+            {
+                EventCenter.Instance.Subscribe("white event", SubscribeToWhiteEvent);
+                EventCenter.Instance.Unsubscribe("black event", SubscribeToBlackEvent);
+            }
+        }
     }
 
     void GroundTouch()
@@ -180,5 +194,33 @@ public class PlayerMovement : MonoBehaviour
 
         float targetSpeed = dir.x * speed;
         rb.velocity = new Vector2(targetSpeed, rb.velocity.y);
+    }
+
+    // Subscribe to Black event (moves player up and changes gravity)
+    private void SubscribeToBlackEvent()
+    {
+        rb.transform.position += new Vector3(0, 1, 0);  // Move up 1 unit
+        jumpForce = 15;  // Set jump force
+        rb.gravityScale = 3;  // Set gravity scale to 3
+    }
+
+    // Unsubscribe from Black event
+    private void UnsubscribeFromBlackEvent()
+    {
+        // Currently nothing to remove here, could add event handling in the future
+    }
+
+    // Subscribe to White event (moves player down and changes gravity)
+    private void SubscribeToWhiteEvent()
+    {
+        rb.transform.position -= new Vector3(0, 1, 0);  // Move down 1 unit
+        jumpForce = -15;  // Set jump force to negative
+        rb.gravityScale = -3;  // Set gravity scale to negative
+    }
+
+    // Unsubscribe from White event
+    private void UnsubscribeFromWhiteEvent()
+    {
+        // Currently nothing to remove here, could add event handling in the future
     }
 }
